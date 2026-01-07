@@ -198,9 +198,9 @@
         : null;
       document.getElementById("avgVal").textContent = avg === null ? "—" : avg.toFixed(2);
 
-      // table head (Team + selected metric + a few commonly interesting ones if they exist)
-      const extras = ["wpi","msi","ssa","wsos","ewp","wlr","hybrid_pa","hybridpa"]
-        .filter(h => h !== metric && headers.includes(h));
+     const extras = ["wpi","wsos","fsi+","wlr","cs"].filter(
+  h => h !== metric && headers.includes(h)
+);
 
       const showCols = ["team", metric, ...extras.slice(0,4)];
       const thead = document.getElementById("thead");
