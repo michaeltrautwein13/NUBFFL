@@ -1,7 +1,7 @@
 {
   "teams": [
     { "team_name": "Jamie Taco's Henchmen", "manager": "Michael Trautwein", "division": "—", "bio": "Sitting Commissioner. Passionate builder of league metrics, propaganda, and morale." },
-    { "team_name": "Doogs Doogs", "manager": "—", "division": "—", "bio": "The Silent One.  Although quiet, constantly lurking in the shadows of the waiver wire" }
+    { "team_name": "Doogs Doogs", "manager": "—", "division": "—", "bio": "The Silent One.  Although quiet, constantly lurking in the shadows of the waiver wire." },
     { "team_name": "Bones Bones", "manager": "—", "division": "—", "bio": "Former regime leader. Eternal rival of Democracy. Still insists the Dark Ages were misunderstood." },
     { "team_name": "Deeuhh Leee", "manager": "—", "division": "—", "bio": "The purest form of incompetence. Perpetually underperforming." },
     { "team_name": "MULCYBUSHEATER24", "manager": "—", "division": "—", "bio": "The Coalition of Frauds. Big mouths, smaller results." },
@@ -11,6 +11,6 @@
     { "team_name": "Jaes Bussy", "manager": "—", "division": "—", "bio": "The Wild Card. Constantly rotating rosters, to little avail." },
     { "team_name": "Hernandez Hitmen", "manager": "—", "division": "—", "bio": "The Chief Extraterrestrial Officer. The public's watching eye, they say." },
     { "team_name": "Biancheese", "manager": "—", "division": "—", "bio": "The Big Choke. Regular season warrior, terrified of the big game." },
-    { "team_name": "O Block Foenem", "manager": "—", "division": "—", "bio": "The Volatile Girth. Truly never know what you will get" }
+    { "team_name": "O Block Foenem", "manager": "—", "division": "—", "bio": "The Volatile Girth. Truly never know what you will get." }
   ]
 }
