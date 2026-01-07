@@ -1,14 +1,14 @@
 {
   "seasons": "2022–2025",
   "champions": [
-    { "year": 2025, "champion": "—", "runner_up": "—", "score": "—", "note": "The season the league truly woke up. Fill in the legend." },
-    { "year": 2024, "champion": "—", "runner_up": "—", "score": "—", "note": "The revolution era. Order replaced the fog." },
-    { "year": 2023, "champion": "—", "runner_up": "—", "score": "—", "note": "Late-stage Dark Ages of Gyeaeia energy." },
-    { "year": 2022, "champion": "—", "runner_up": "—", "score": "—", "note": "The founding year. Innocence before the lore." }
+    { "year": 2025, "champion": "Boodrey", "runner_up": "Cheddar Mankus Rack", "note": "The Awakening - living up to the legend." },
+    { "year": 2024, "champion": "Jamie Taco's Henchmen", "runner_up": "Boodrey", "note": "The Revolution - order replaced the fog." },
+    { "year": 2023, "champion": "Doogs Doogs", "runner_up": "Biancheese", "note": "The Fall of Gyeaeia - the end of tyranny." },
+    { "year": 2022, "champion": "Biancheese", "runner_up": "O Block Foenem", "note": "The Founding - an era of innocence." }
   ],
   "awards": [
-    { "label": "Most Points For (Season)", "winner": "—", "detail": "Total PF: —", "year": "2025" },
-    { "label": "Highest Single-Week Score", "winner": "—", "detail": "Week — • — points", "year": "All-time" },
-    { "label": "Sacko / Last Place", "winner": "—", "detail": "Punishment: —", "year": "2025" }
+    { "label": "Most Points For (Season)", "winner": "Jamie Taco's Henchmen", "detail": "Total PF: 1996.88", "year": "2024" },
+    { "label": "Highest Single-Week Score", "winner": "Jamie Taco's Henchmen", "detail": "Week 14, 2024 • 192.98 points", "year": "All-Time" },
+    { "label": "Last Place", "winner": "Deeuhh Leee", "detail": "Punishment: The Waffle Man", "year": "2025" }
   ]
 }
