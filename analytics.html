@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NUBFFL — Analytics</title>
+  <link rel="stylesheet" href="assets/styles.css"/>
+  <style>
+    .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+    .input{
+      padding:10px 12px;border-radius:12px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      color:var(--text); min-width:220px;
+      outline:none;
+    }
+    .select{min-width:200px}
+    .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:12px}
+    .kpi-title{font-size:12px;color:var(--muted)}
+    .kpi-value{font-size:20px;font-weight:900;margin-top:4px}
+    .small{font-size:12px}
+    .note{white-space:pre-wrap;line-height:1.35}
+  </style>
+</head>
+
+<body data-page="analytics">
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="brand">
+        <div class="badge"></div>
+        <div>
+          <div class="brand-title">NU Bags Fantasy Football League</div>
+          <div class="brand-sub">Analytics • Live from the Spreadsheet War Room</div>
+        </div>
+      </div>
+      <div class="links">
+        <a class="link" href="index.html">Home</a>
+        <a class="link" href="power-rankings.html">Power</a>
+        <a class="link" href="standings.html">Standings</a>
+        <a class="link" href="history.html">History</a>
+        <a class="link" href="teams.html">Teams</a>
+        <a class="link" href="analytics.html">Analytics</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section class="hero">
+      <div class="hero-title">
+        <h1>Analytics</h1>
+        <div class="pill">Source: <b id="srcLabel">Google Sheet (Published)</b></div>
+      </div>
+      <p class="muted">
+        This page pulls live data from your published Google Sheet.
+        Update the sheet → refresh the site → the league panics.
+      </p>
+
+      <div class="controls">
+        <input id="search" class="input" placeholder="Search team…"/>
+        <select id="metric" class="input select"></select>
+        <span class="pill">Last Refresh: <b id="refreshTime">—</b></span>
+      </div>
+    </section>
+
+    <div id="errorBox" class="error" style="display:none;"></div>
+
+    <section class="kpis">
+      <div class="card">
+        <div class="kpi-title">#1 Team (Selected Metric)</div>
+        <div id="topTeam" class="kpi-value">—</div>
+        <div id="topVal" class="muted small">—</div>
+      </div>
+      <div class="card">
+        <div class="kpi-title">League Average (Selected Metric)</div>
+        <div id="avgVal" class="kpi-value">—</div>
+        <div class="muted small">Across teams shown (after search filter)</div>
+      </div>
+      <div class="card">
+        <div class="kpi-title">Lore Note</div>
+        <div class="note muted small">Stats don’t lie. But managers do.</div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:12px;">
+      <h2 class="section-title">Leaderboard</h2>
+      <table class="table">
+        <thead id="thead"></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <p class="muted small" style="margin-top:10px;">
+        Required column: <code>team</code>. Other columns can be anything (wpi, msi, ssa, wsos, ewp, wlr, hybrid_pa…).
+      </p>
+    </section>
+
+    <footer class="footer muted">
+      If you see an error, confirm your sheet is <b>Published to web</b> and you pasted the CSV URL correctly.
+    </footer>
+  </main>
+
+  <script>
+    // ✅ PASTE your published CSV URL here
+    // Example format:
+    // https://docs.google.com/spreadsheets/d/e/XXXXX/pub?output=csv&gid=123456789
+    const SHEET_CSV_URL = "PASTE_YOUR_PUBLISHED_CSV_URL_HERE";
+
+    document.getElementById("refreshTime").textContent = new Date().toLocaleString();
+
+    function parseCSV(text){
+      const rows = [];
+      let row = [], field = "", inQuotes = false;
+      for (let i=0;i<text.length;i++){
+        const c = text[i], n = text[i+1];
+        if (c === '"'){
+          if (inQuotes && n === '"'){ field += '"'; i++; }
+          else inQuotes = !inQuotes;
+        } else if (c === ',' && !inQuotes){
+          row.push(field); field = "";
+        } else if ((c === '\n' || c === '\r') && !inQuotes){
+          if (field.length || row.length){ row.push(field); rows.push(row); }
+          field = ""; row = [];
+          if (c === '\r' && n === '\n') i++;
+        } else {
+          field += c;
+        }
+      }
+      if (field.length || row.length){ row.push(field); rows.push(row); }
+      return rows;
+    }
+
+    function normalizeHeader(h){
+      return (h || "").trim().toLowerCase().replace(/\s+/g, "_");
+    }
+
+    function num(x){
+      const v = Number(String(x ?? "").replace(/[^0-9.\-]/g,""));
+      return Number.isFinite(v) ? v : null;
+    }
+
+    let allRows = [];
+    let headers = [];
+
+    function buildMetricDropdown(){
+      const metricSel = document.getElementById("metric");
+      metricSel.innerHTML = "";
+
+      // All columns except team are metrics
+      const metrics = headers.filter(h => h !== "team");
+      // Default preferences if present
+      const preferred = ["wpi","msi","ssa","wsos","ewp","wlr","hybrid_pa","hybridpa"];
+      metrics.sort((a,b)=>{
+        const ai = preferred.indexOf(a), bi = preferred.indexOf(b);
+        if (ai === -1 && bi === -1) return a.localeCompare(b);
+        if (ai === -1) return 1;
+        if (bi === -1) return -1;
+        return ai - bi;
+      });
+
+      metrics.forEach(m=>{
+        const opt = document.createElement("option");
+        opt.value = m;
+        opt.textContent = m.replaceAll("_"," ").toUpperCase();
+        metricSel.appendChild(opt);
+      });
+
+      // choose first metric, fallback
+      if (!metricSel.value && metrics.length) metricSel.value = metrics[0];
+    }
+
+    function renderTable(){
+      const q = document.getElementById("search").value.trim().toLowerCase();
+      const metric = document.getElementById("metric").value;
+
+      const filtered = allRows
+        .filter(r => r.team && r.team.toLowerCase().includes(q))
+        .map(r => ({...r, _metric: num(r[metric])}))
+        .filter(r => r._metric !== null);
+
+      filtered.sort((a,b)=> b._metric - a._metric);
+
+      // KPIs
+      const top = filtered[0];
+      document.getElementById("topTeam").textContent = top ? top.team : "—";
+      document.getElementById("topVal").textContent = top ? `${metric.toUpperCase()}: ${top._metric.toFixed(2)}` : "—";
+
+      const avg = filtered.length
+        ? (filtered.reduce((s,r)=> s + r._metric, 0) / filtered.length)
+        : null;
+      document.getElementById("avgVal").textContent = avg === null ? "—" : avg.toFixed(2);
+
+      // table head (Team + selected metric + a few commonly interesting ones if they exist)
+      const extras = ["wpi","msi","ssa","wsos","ewp","wlr","hybrid_pa","hybridpa"]
+        .filter(h => h !== metric && headers.includes(h));
+
+      const showCols = ["team", metric, ...extras.slice(0,4)];
+      const thead = document.getElementById("thead");
+      thead.innerHTML = `
+        <tr>
+          <th>#</th>
+          ${showCols.map(c => `<th>${c === "team" ? "Team" : c.replaceAll("_"," ").toUpperCase()}</th>`).join("")}
+        </tr>
+      `;
+
+      const tbody = document.getElementById("tbody");
+      tbody.innerHTML = "";
+      filtered.forEach((r, idx)=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${idx+1}</td>
+          ${showCols.map(c=>{
+            if (c === "team") return `<td><b>${r.team}</b></td>`;
+            const v = num(r[c]);
+            return `<td>${v === null ? "—" : v.toFixed(2)}</td>`;
+          }).join("")}
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function init(){
+      try{
+        if (!SHEET_CSV_URL || SHEET_CSV_URL.includes("PASTE_YOUR")) {
+          throw new Error("Missing SHEET_CSV_URL");
+        }
+
+        const res = await fetch(SHEET_CSV_URL, { cache: "no-store" });
+        if (!res.ok) throw new Error("Fetch failed");
+        const csv = await res.text();
+
+        const rows = parseCSV(csv);
+        if (!rows.length) throw new Error("No data");
+
+        headers = rows[0].map(normalizeHeader);
+        const teamIdx = headers.indexOf("team");
+        if (teamIdx === -1) throw new Error("No 'team' column found");
+
+        allRows = rows.slice(1)
+          .filter(r => r.some(x => String(x||"").trim() !== ""))
+          .map(r=>{
+            const obj = {};
+            headers.forEach((h,i)=> obj[h] = (r[i] ?? "").trim());
+            return obj;
+          })
+          .filter(o => o.team);
+
+        buildMetricDropdown();
+        renderTable();
+
+        document.getElementById("search").addEventListener("input", renderTable);
+        document.getElementById("metric").addEventListener("change", renderTable);
+
+      }catch(e){
+        console.error(e);
+        const box = document.getElementById("errorBox");
+        box.style.display = "block";
+        box.textContent =
+          "Analytics failed to load. Make sure your Google Sheet tab is Published to web as CSV, " +
+          "and that your sheet includes a column named 'team'. Also confirm the URL is correct.";
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
