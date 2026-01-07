@@ -14,7 +14,7 @@
       color:var(--text); min-width:220px;
       outline:none;
     }
-    .select{min-width:200px}
+    .select{min-width:220px}
     .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:12px}
     .kpi-title{font-size:12px;color:var(--muted)}
     .kpi-value{font-size:20px;font-weight:900;margin-top:4px}
@@ -51,8 +51,7 @@
         <div class="pill">Source: <b id="srcLabel">Google Sheet (Published)</b></div>
       </div>
       <p class="muted">
-        This page pulls live data from your published Google Sheet.
-        Update the sheet → refresh the site → the league panics.
+        Live pulls from the published sheet. Update the spreadsheet → refresh → instant panic.
       </p>
 
       <div class="controls">
@@ -88,20 +87,20 @@
         <tbody id="tbody"></tbody>
       </table>
       <p class="muted small" style="margin-top:10px;">
-        Required column: <code>team</code>. Other columns can be anything (wpi, msi, ssa, wsos, ewp, wlr, hybrid_pa…).
+        Required column in your CSV: <code>team</code>.<br/>
+        Allowed stat columns: <code>wpi</code>, <code>wsos</code>, <code>fsi+</code>, <code>wlr</code>, <code>cs</code>.
       </p>
     </section>
 
     <footer class="footer muted">
-      If you see an error, confirm your sheet is <b>Published to web</b> and you pasted the CSV URL correctly.
+      If this page is empty, check that your sheet is <b>Published to web (CSV)</b> and your header row includes <code>team</code>.
     </footer>
   </main>
 
   <script>
-    // ✅ PASTE your published CSV URL here
-    // Example format:
-    // https://docs.google.com/spreadsheets/d/e/XXXXX/pub?output=csv&gid=123456789
-    const SHEET_CSV_URL = https://docs.google.com/spreadsheets/d/17VRoYyQ41Ny_HMYs3dj9-BNkh4S_tEyDOI7L4c8Wrk0/edit?gid=906872024#gid=906872024
+    // ✅ Published CSV URL (must be the /pub?...output=csv link, not an /edit link)
+    const SHEET_CSV_URL =
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vSIVNZsrdy0NNNJffkyevyv137lGtlhMKcy-jZOO4acL_iMKRpcAUuRZW0zTNFPs9v2aYijw74LRTmf/pub?gid=906872024&single=true&output=csv";
 
     document.getElementById("refreshTime").textContent = new Date().toLocaleString();
 
@@ -131,6 +130,32 @@
       return (h || "").trim().toLowerCase().replace(/\s+/g, "_");
     }
 
+    // Map common header variants to canonical names we use in the app
+    function canonicalizeHeader(h){
+      const map = {
+        "team": "team",
+        "team_name": "team",
+        "teamname": "team",
+
+        "wpi": "wpi",
+
+        "wsos": "wsos",
+        "w_sos": "wsos",
+
+        "fsi+": "fsi+",
+        "fsi_+": "fsi+",
+        "fsi_plus": "fsi+",
+        "fsi": "fsi+",
+
+        "wlr": "wlr",
+
+        "cs": "cs",
+        "consistency_score": "cs",
+        "consistencyscore": "cs"
+      };
+      return map[h] || h;
+    }
+
     function num(x){
       const v = Number(String(x ?? "").replace(/[^0-9.\-]/g,""));
       return Number.isFinite(v) ? v : null;
@@ -140,41 +165,28 @@
     let headers = [];
 
     function buildMetricDropdown(){
-  const metricSel = document.getElementById("metric");
-  metricSel.innerHTML = "";
-  const allowed = ["wpi","wsos","fsi+","wlr","cs"];
-  const labelMap = {
-    "wpi": "WPI",
-    "wsos": "WSoS",
-    "fsi+": "FSI+",
-    "wlr": "WLR",
-    "cs": "CS"
-  };
-  const metrics = allowed.filter(m => headers.includes(m));
+      const metricSel = document.getElementById("metric");
+      metricSel.innerHTML = "";
 
-  metrics.forEach(m => {
-    const opt = document.createElement("option");
-    opt.value = m;
-    opt.textContent = labelMap[m];
-    metricSel.appendChild(opt);
-  });
+      const allowed = ["wsos","fsi+","wlr","cs","wpi"];
+      const labelMap = {
+        "wpi": "WPI",
+        "wsos": "WSoS",
+        "fsi+": "FSI+",
+        "wlr": "WLR",
+        "cs": "CS"
+      };
 
-  // Default selection
-  if (metrics.includes("wpi")) {
-    metricSel.value = "wpi";
-  }
-}
+      const metrics = allowed.filter(m => headers.includes(m));
 
-
-      metrics.forEach(m=>{
+      metrics.forEach(m => {
         const opt = document.createElement("option");
         opt.value = m;
-        opt.textContent = m.replaceAll("_"," ").toUpperCase();
+        opt.textContent = labelMap[m];
         metricSel.appendChild(opt);
       });
 
-      // choose first metric, fallback
-      if (!metricSel.value && metrics.length) metricSel.value = metrics[0];
+      metricSel.value = metrics.includes("wpi") ? "wpi" : (metrics[0] || "");
     }
 
     function renderTable(){
@@ -188,26 +200,51 @@
 
       filtered.sort((a,b)=> b._metric - a._metric);
 
+      // empty state
+      if (!filtered.length) {
+        const box = document.getElementById("errorBox");
+        box.style.display = "block";
+        box.textContent =
+          "No rows found. Check your sheet header names (team, wpi, wsos, fsi+, wlr, cs) and confirm the metric values are numeric.";
+        document.getElementById("tbody").innerHTML = "";
+        document.getElementById("thead").innerHTML = "";
+        document.getElementById("topTeam").textContent = "—";
+        document.getElementById("topVal").textContent = "—";
+        document.getElementById("avgVal").textContent = "—";
+        return;
+      } else {
+        document.getElementById("errorBox").style.display = "none";
+      }
+
       // KPIs
       const top = filtered[0];
       document.getElementById("topTeam").textContent = top ? top.team : "—";
       document.getElementById("topVal").textContent = top ? `${metric.toUpperCase()}: ${top._metric.toFixed(2)}` : "—";
 
-      const avg = filtered.length
-        ? (filtered.reduce((s,r)=> s + r._metric, 0) / filtered.length)
-        : null;
-      document.getElementById("avgVal").textContent = avg === null ? "—" : avg.toFixed(2);
+      const avg = filtered.reduce((s,r)=> s + r._metric, 0) / filtered.length;
+      document.getElementById("avgVal").textContent = avg.toFixed(2);
 
-     const extras = ["wpi","wsos","fsi+","wlr","cs"].filter(
-  h => h !== metric && headers.includes(h)
-);
+      // show Team + selected metric + the other allowed stats (max 4)
+      const extras = ["wsos","fsi+","wlr","cs","wpi"].filter(
+        h => h !== metric && headers.includes(h)
+      );
 
       const showCols = ["team", metric, ...extras.slice(0,4)];
+
+      const labelMap = {
+        "team": "Team",
+        "wpi": "WPI",
+        "wsos": "WSoS",
+        "fsi+": "FSI+",
+        "wlr": "WLR",
+        "cs": "CS"
+      };
+
       const thead = document.getElementById("thead");
       thead.innerHTML = `
         <tr>
           <th>#</th>
-          ${showCols.map(c => `<th>${c === "team" ? "Team" : c.replaceAll("_"," ").toUpperCase()}</th>`).join("")}
+          ${showCols.map(c => `<th>${labelMap[c] || c.toUpperCase()}</th>`).join("")}
         </tr>
       `;
 
@@ -229,20 +266,19 @@
 
     async function init(){
       try{
-        if (!SHEET_CSV_URL || SHEET_CSV_URL.includes("PASTE_YOUR")) {
-          throw new Error("Missing SHEET_CSV_URL");
-        }
-
         const res = await fetch(SHEET_CSV_URL, { cache: "no-store" });
-        if (!res.ok) throw new Error("Fetch failed");
+        if(!res.ok) throw new Error("Fetch failed");
         const csv = await res.text();
 
         const rows = parseCSV(csv);
-        if (!rows.length) throw new Error("No data");
+        if(!rows.length) throw new Error("No data");
 
-        headers = rows[0].map(normalizeHeader);
-        const teamIdx = headers.indexOf("team");
-        if (teamIdx === -1) throw new Error("No 'team' column found");
+        // headers -> normalized -> canonicalized
+        headers = rows[0].map(normalizeHeader).map(canonicalizeHeader);
+
+        if (!headers.includes("team")) {
+          throw new Error("No 'team' column found");
+        }
 
         allRows = rows.slice(1)
           .filter(r => r.some(x => String(x||"").trim() !== ""))
@@ -264,8 +300,7 @@
         const box = document.getElementById("errorBox");
         box.style.display = "block";
         box.textContent =
-          "Analytics failed to load. Make sure your Google Sheet tab is Published to web as CSV, " +
-          "and that your sheet includes a column named 'team'. Also confirm the URL is correct.";
+          "Analytics failed to load. Make sure your sheet tab is Published to web as CSV and includes a 'team' column.";
       }
     }
 
