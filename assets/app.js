@@ -52,9 +52,11 @@ async function renderHomepageChampion(){
 
         <div class="champ-logo-wrap">
           <img
-            src="assets/champ_logo.png"
-            alt="2025 NUBFFL Championship Logo"
-            class="champ-logo-img"
+  src="assets/2025%20Championship%20Logo.png"
+  alt="2025 NUBFFL Championship Logo"
+  class="champ-logo-img"
+/>
+
           />
         </div>
       </div>
