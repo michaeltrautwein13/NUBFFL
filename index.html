@@ -6,17 +6,18 @@
   <title>NUBFFL — Home</title>
   <link rel="stylesheet" href="assets/styles.css"/>
 </head>
-<body data-page="index">
 
+<body data-page="index">
   <nav class="nav">
     <div class="nav-inner">
       <div class="brand">
-  <img class="logo" src="assets/wildcat_logo.png" alt="NUBFFL logo">
-  <div>
-    <div class="brand-title">NU Bags Fantasy Football League</div>
-    <div class="brand-sub">...</div>
-  </div>
+        <img class="logo" src="assets/wildcat_logo.png" alt="NUBFFL logo">
+        <div>
+          <div class="brand-title">NU Bags Fantasy Football League</div>
+          <div class="brand-sub">...</div>
+        </div>
       </div>
+
       <div class="links">
         <a class="link" href="analytics.html">Analytics</a>
         <a class="link active" href="index.html">Home</a>
@@ -29,15 +30,20 @@
   </nav>
 
   <main class="container">
+    <!-- Champion spotlight (JS injects a champ-card here) -->
+    <section id="championSpotlight"></section>
+
     <section class="hero">
       <div class="hero-title">
         <h1>Welcome to NUBFFL</h1>
         <div class="pill">Seasons: <b>2022–2025</b></div>
       </div>
+
       <p class="muted">
         This site exists to document the rise, fall, and weekly humiliation of twelve fantasy football franchises.
         It is part scoreboard, part museum, part legend.
       </p>
+
       <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
         <span class="pill">Power Rankings</span>
         <span class="pill">Standings</span>
@@ -45,7 +51,6 @@
         <span class="pill">Teams</span>
       </div>
     </section>
-    <section id="championSpotlight"></section>
 
     <section class="grid">
       <div class="card">
@@ -54,6 +59,7 @@
           Preserve the league. Track the receipts. Promote banter. And, when necessary, expose fraud.
         </div>
       </div>
+
       <div class="card">
         <h2 class="section-title">Commissioner’s Note</h2>
         <div class="muted" style="line-height:1.45;">
@@ -63,11 +69,9 @@
       </div>
     </section>
 
-    <footer class="footer muted">
-    </footer>
+    <footer class="footer muted"></footer>
   </main>
-  
+
   <script src="assets/app.js"></script>
 </body>
 </html>
-
