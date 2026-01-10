@@ -436,3 +436,103 @@ th{
     font-size: 11px;
   }
 }
+/* =========================
+   POWER RANKINGS UI (restore cards/chips)
+   Paste at bottom of assets/styles.css
+========================= */
+
+.stack{
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Each ranking becomes a card */
+.rank-row{
+  background: #fff;
+  border: 1px solid rgba(75,46,131,0.18);
+  border-radius: 16px;
+  padding: 14px 14px;
+  box-shadow: 0 10px 24px rgba(17,24,39,0.06);
+}
+
+/* Header row: name left, chips right */
+.rank-top{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.rank-name{
+  font-weight: 900;
+  font-size: 16px;
+  color: #111827;
+  line-height: 1.2;
+}
+
+/* Subline meta */
+.rank-meta{
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 10px;
+}
+
+/* Notes paragraph */
+.rank-notes{
+  font-size: 14px;
+  line-height: 1.35;
+  color: #111827;
+  background: rgba(75,46,131,0.04);
+  border: 1px solid rgba(75,46,131,0.10);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+/* Chips */
+.chip{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(17,24,39,0.04);
+  border: 1px solid rgba(17,24,39,0.10);
+  color: #111827;
+  font-weight: 800;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* Delta chip variants */
+.chip.delta{
+  border-color: rgba(75,46,131,0.18);
+  background: rgba(75,46,131,0.08);
+  color: #4b2e83;
+}
+
+.chip.delta.up{
+  background: rgba(75,46,131,0.10);
+  color: #4b2e83;
+}
+
+.chip.delta.down{
+  background: rgba(180,35,24,0.10);
+  border-color: rgba(180,35,24,0.18);
+  color: #b42318;
+}
+
+.chip.delta.flat{
+  background: rgba(107,114,128,0.10);
+  border-color: rgba(107,114,128,0.18);
+  color: #6b7280;
+}
+
+/* Make it breathe on mobile */
+@media (max-width: 800px){
+  .rank-row{ padding: 12px; }
+  .rank-name{ font-size: 15px; }
+  .rank-notes{ font-size: 13px; }
+}
