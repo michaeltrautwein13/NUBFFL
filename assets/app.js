@@ -43,7 +43,7 @@ async function renderHomepageChampion(){
           <div class="champ-name">${esc(c.champion)}</div>
 
           <div class="champ-sub">
-            ${c.year}
+            ${esc(c.year)}
             ${c.runner_up ? ` • Runner-up: <b>${esc(c.runner_up)}</b>` : ""}
           </div>
 
@@ -52,9 +52,10 @@ async function renderHomepageChampion(){
 
         <div class="champ-logo-wrap">
           <img
-  src="assets/2025%20Championship%20Logo.png"
-  alt="2025 NUBFFL Championship Logo"
-  class="champ-logo-img"
+            src="assets/champ_logo.png"
+            alt="NUBFFL Championship Logo"
+            class="champ-logo-img"
+            loading="eager"
           />
         </div>
       </div>
@@ -162,7 +163,6 @@ async function renderStandings(){
 
   function renderRows(list){
     tbody.innerHTML = "";
-
     list.forEach((t, idx)=>{
       const champs = toNum(t.Championships ?? 0);
 
@@ -235,21 +235,24 @@ async function renderStandings(){
 ========================= */
 async function renderHistory(){
   const h = await loadJSON("data/history.json");
-  document.getElementById("hRange").textContent = h.seasons || "—";
+  const el = document.getElementById("hRange");
+  if(el) el.textContent = h.seasons || "—";
 
   const champBody = document.getElementById("champBody");
-  champBody.innerHTML = "";
-  (h.champions || []).forEach(c=>{
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${esc(c.year)}</td>
-      <td><b>${esc(c.champion)}</b></td>
-      <td>${c.runner_up ? esc(c.runner_up) : "—"}</td>
-      <td>${c.score ? esc(c.score) : "—"}</td>
-      <td>${c.note ? esc(c.note) : ""}</td>
-    `;
-    champBody.appendChild(tr);
-  });
+  if(champBody){
+    champBody.innerHTML = "";
+    (h.champions || []).forEach(c=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${esc(c.year)}</td>
+        <td><b>${esc(c.champion)}</b></td>
+        <td>${c.runner_up ? esc(c.runner_up) : "—"}</td>
+        <td>${c.score ? esc(c.score) : "—"}</td>
+        <td>${c.note ? esc(c.note) : ""}</td>
+      `;
+      champBody.appendChild(tr);
+    });
+  }
 
   const awards = document.getElementById("awards");
   if(awards){
@@ -278,6 +281,7 @@ async function renderHistory(){
 async function renderTeams(){
   const t = await loadJSON("data/teams.json");
   const wrap = document.getElementById("teamsGrid");
+  if(!wrap) return;
   wrap.innerHTML = "";
 
   (t.teams || []).forEach(team=>{
