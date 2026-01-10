@@ -32,7 +32,7 @@ async function renderHomepageChampion(){
   const champs = Array.isArray(h.champions) ? h.champions : [];
   if(champs.length === 0) return;
 
-  // Pick most recent champion
+  // Most recent champion
   const c = champs.slice().sort((a,b) => Number(a.year) - Number(b.year)).pop();
 
   wrap.innerHTML = `
@@ -40,7 +40,7 @@ async function renderHomepageChampion(){
       <div class="champ-top">
         <div class="champ-left">
           <div class="champ-title">Defending Champion</div>
-          <div class="champ-name">${esc(c.champion)}</div>
+          <div class="champ-name champ-glow">${esc(c.champion)}</div>
 
           <div class="champ-sub">
             ${esc(c.year)}
