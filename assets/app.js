@@ -69,6 +69,15 @@ async function renderPower(){
   });
 }
 
+/**
+ * STANDINGS (dropdown sorting)
+ * Expects: data/standings.json -> { last_updated, teams: [...] }
+ * Team row keys used:
+ *  - team
+ *  - record  (e.g. "9-5")
+ *  - points_for, points_against
+ *  - Championships  (capital C)
+ */
 async function renderStandings(){
   const s = await loadJSON("data/standings.json");
   document.getElementById("sUpdated").textContent = s.last_updated || "—";
@@ -76,40 +85,32 @@ async function renderStandings(){
   const tbody = document.getElementById("standingsBody");
   const dropdowns = Array.from(document.querySelectorAll(".sort-dd"));
 
-  // Keep original order so "none" can revert
   const original = (s.teams || []).map((t, i) => ({ ...t, __idx: i }));
-
-  let current = original.slice(); // currently displayed order
-
-  function recordValue(rec){
-    // Convert "33-23" into win pct (or net wins). Win pct is safest.
-    if(!rec) return null;
-    const m = String(rec).match(/(\d+)\s*-\s*(\d+)/);
-    if(!m) return null;
-    const w = Number(m[1]), l = Number(m[2]);
-    const games = w + l;
-    if(!games) return null;
-    return w / games; // win percentage
-  }
+  let current = original.slice();
 
   function toNum(v){
     const n = Number(String(v ?? "").replace(/[^0-9.\-]/g, ""));
     return Number.isFinite(n) ? n : null;
   }
 
+  function recordValue(rec){
+    // Convert "9-5" into win%
+    if(!rec) return null;
+    const m = String(rec).match(/(\d+)\s*-\s*(\d+)/);
+    if(!m) return null;
+    const w = Number(m[1]), l = Number(m[2]);
+    const games = w + l;
+    if(!games) return null;
+    return w / games;
+  }
+
   function getComparable(t, key){
-    if(key === "rank") return t.__idx;               // default ranking order
-    if(key === "team") return (t.team || "").toLowerCase();
-
+    if(key === "rank") return t.__idx; // original ordering (asc = original, desc = reverse)
+    if(key === "team") return String(t.team || "").toLowerCase();
     if(key === "record") return recordValue(t.record);
-
     if(key === "points_for") return toNum(t.points_for);
     if(key === "points_against") return toNum(t.points_against);
-
-    // EXACT key: "Championships"
     if(key === "Championships") return toNum(t.Championships ?? 0);
-
-    // fallback if you add more later
     return t[key];
   }
 
@@ -117,8 +118,7 @@ async function renderStandings(){
     tbody.innerHTML = "";
 
     list.forEach((t, idx)=>{
-      const champsRaw = t.Championships ?? 0;
-      const champs = Number(champsRaw);
+      const champs = toNum(t.Championships ?? 0);
 
       const tr = document.createElement("tr");
       tr.innerHTML = `
@@ -127,7 +127,7 @@ async function renderStandings(){
         <td>${t.record || "—"}</td>
         <td>${t.points_for != null ? Number(t.points_for).toFixed(1) : "—"}</td>
         <td>${t.points_against != null ? Number(t.points_against).toFixed(1) : "—"}</td>
-        <td class="champ-cell">${Number.isFinite(champs) ? champs : "—"}</td>
+        <td class="champ-cell">${champs == null ? "—" : champs}</td>
       `;
       tbody.appendChild(tr);
     });
@@ -146,16 +146,39 @@ async function renderStandings(){
       const av = getComparable(a, key);
       const bv = getComparable(b, key);
 
-      // Nulls always bottom
       const aNull = (av === null || av === undefined || av === "");
       const bNull = (bv === null || bv === undefined || bv === "");
       if(aNull && bNull) return 0;
       if(aNull) return 1;
       if(bNull) return -1;
 
-      // String compare
       if(typeof av === "string" || typeof bv === "string"){
-        return String(av).localeCompare(String(bv))
+        return String(av).localeCompare(String(bv)) * factor;
+      }
+
+      return (av - bv) * factor;
+    });
+
+    renderRows(current);
+  }
+
+  // wire dropdowns
+  dropdowns.forEach(dd => {
+    dd.addEventListener("change", () => {
+      const key = dd.dataset.key;
+      const dir = dd.value;
+
+      // reset others so only one sort is active
+      dropdowns.forEach(other => {
+        if(other !== dd) other.value = "none";
+      });
+
+      applySort(key, dir);
+    });
+  });
+
+  renderRows(current);
+}
 
 async function renderHistory(){
   const h = await loadJSON("data/history.json");
