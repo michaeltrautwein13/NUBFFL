@@ -280,3 +280,29 @@ window.addEventListener("DOMContentLoaded", async ()=>{
   }
 });
 
+async function renderHomepageChampion(){
+  const h = await loadJSON("data/history.json");
+  if(!h.champions || !h.champions.length) return;
+
+  // Get most recent champion (assumes chronological order)
+  const c = h.champions[h.champions.length - 1];
+
+  const wrap = document.getElementById("championSpotlight");
+  if(!wrap) return;
+
+  wrap.innerHTML = `
+    <section class="champ-card">
+      <div class="champ-top">
+        <div>
+          <div class="champ-title">Defending Champion</div>
+          <div class="champ-name">${c.champion}</div>
+          <div class="champ-sub">
+            ${c.year} • ${c.record || "—"}${c.points ? ` • ${c.points} PF` : ""}
+          </div>
+          ${c.note ? `<div class="muted" style="margin-top:6px;font-size:13px;">${c.note}</div>` : ""}
+        </div>
+        <div class="trophy">🏆</div>
+      </div>
+    </section>
+  `;
+}
