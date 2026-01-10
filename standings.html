@@ -6,16 +6,18 @@
   <title>NUBFFL — Standings</title>
   <link rel="stylesheet" href="assets/styles.css"/>
 </head>
+
 <body data-page="standings">
   <nav class="nav">
     <div class="nav-inner">
       <div class="brand">
-  <img class="logo" src="assets/wildcat_logo.png" alt="NUBFFL logo">
-  <div>
-    <div class="brand-title">NU Bags Fantasy Football League</div>
-    <div class="brand-sub">...</div>
-  </div>
+        <img class="logo" src="assets/wildcat_logo.png" alt="NUBFFL logo">
+        <div>
+          <div class="brand-title">NU Bags Fantasy Football League</div>
+          <div class="brand-sub">...</div>
+        </div>
       </div>
+
       <div class="links">
         <a class="link" href="analytics.html">Analytics</a>
         <a class="link" href="index.html">Home</a>
@@ -33,71 +35,71 @@
         <h1>Standings</h1>
         <div class="pill">Last Updated: <b id="sUpdated">—</b></div>
       </div>
-      <p class="muted"> NUBFFL Career Standings and Statistics </p>
+      <p class="muted">NUBFFL Career Standings and Statistics</p>
     </section>
 
     <div id="errorBox" class="error" style="display:none;"></div>
 
     <section class="card">
       <table class="table">
-     <thead>
-  <tr>
-    <th style="width:60px;">
-      # 
-      <select class="sort-dd" data-key="rank">
-        <option value="none">—</option>
-        <option value="asc">Asc</option>
-        <option value="desc">Desc</option>
-      </select>
-    </th>
+        <thead>
+          <tr>
+            <th style="width:70px;">
+              #
+              <select class="sort-dd" data-key="rank">
+                <option value="none">—</option>
+                <option value="asc">Asc</option>
+                <option value="desc">Desc</option>
+              </select>
+            </th>
 
-    <th>
-      Team
-      <select class="sort-dd" data-key="team">
-        <option value="none">—</option>
-        <option value="asc">A→Z</option>
-        <option value="desc">Z→A</option>
-      </select>
-    </th>
+            <th>
+              Team
+              <select class="sort-dd" data-key="team">
+                <option value="none">—</option>
+                <option value="asc">A→Z</option>
+                <option value="desc">Z→A</option>
+              </select>
+            </th>
 
-    <th style="width:140px;">
-      Record
-      <select class="sort-dd" data-key="record">
-        <option value="none">—</option>
-        <option value="asc">Low→High</option>
-        <option value="desc">High→Low</option>
-      </select>
-    </th>
+            <th style="width:150px;">
+              Record
+              <select class="sort-dd" data-key="record">
+                <option value="none">—</option>
+                <option value="asc">Low→High</option>
+                <option value="desc">High→Low</option>
+              </select>
+            </th>
 
-    <th style="width:110px;">
-      PF
-      <select class="sort-dd" data-key="points_for">
-        <option value="none">—</option>
-        <option value="asc">Low→High</option>
-        <option value="desc">High→Low</option>
-      </select>
-    </th>
+            <th style="width:120px;">
+              PF
+              <select class="sort-dd" data-key="points_for">
+                <option value="none">—</option>
+                <option value="asc">Low→High</option>
+                <option value="desc">High→Low</option>
+              </select>
+            </th>
 
-    <th style="width:110px;">
-      PA
-      <select class="sort-dd" data-key="points_against">
-        <option value="none">—</option>
-        <option value="asc">Low→High</option>
-        <option value="desc">High→Low</option>
-      </select>
-    </th>
+            <th style="width:120px;">
+              PA
+              <select class="sort-dd" data-key="points_against">
+                <option value="none">—</option>
+                <option value="asc">Low→High</option>
+                <option value="desc">High→Low</option>
+              </select>
+            </th>
 
-    <th style="width:170px; text-align:center;">
-      Championships
-      <select class="sort-dd" data-key="Championships">
-        <option value="none">—</option>
-        <option value="asc">Low→High</option>
-        <option value="desc">High→Low</option>
-      </select>
-    </th>
-  </tr>
-</thead>
-        
+            <th style="width:190px; text-align:center;">
+              Championships
+              <select class="sort-dd" data-key="Championships">
+                <option value="none">—</option>
+                <option value="asc">Low→High</option>
+                <option value="desc">High→Low</option>
+              </select>
+            </th>
+          </tr>
+        </thead>
+
         <tbody id="standingsBody"></tbody>
       </table>
     </section>
