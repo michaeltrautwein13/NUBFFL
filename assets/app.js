@@ -12,6 +12,15 @@ function setActiveNav(){
   });
 }
 
+function esc(str){
+  return String(str ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 function chipDelta(delta){
   const span = document.createElement("span");
   span.className = "chip delta " + (delta > 0 ? "up" : delta < 0 ? "down" : "flat");
@@ -19,6 +28,9 @@ function chipDelta(delta){
   return span;
 }
 
+/* =========================
+   POWER RANKINGS
+========================= */
 async function renderPower(){
   const pr = await loadJSON("data/power_rankings.json");
   document.getElementById("prWeek").textContent = pr.week ? `Week ${pr.week}` : "";
@@ -69,15 +81,9 @@ async function renderPower(){
   });
 }
 
-/**
- * STANDINGS (dropdown sorting)
- * Expects: data/standings.json -> { last_updated, teams: [...] }
- * Team row keys used:
- *  - team
- *  - record  (e.g. "9-5")
- *  - points_for, points_against
- *  - Championships  (capital C)
- */
+/* =========================
+   STANDINGS (dropdown sort)
+========================= */
 async function renderStandings(){
   const s = await loadJSON("data/standings.json");
   document.getElementById("sUpdated").textContent = s.last_updated || "—";
@@ -85,6 +91,7 @@ async function renderStandings(){
   const tbody = document.getElementById("standingsBody");
   const dropdowns = Array.from(document.querySelectorAll(".sort-dd"));
 
+  // Preserve original order for "none"
   const original = (s.teams || []).map((t, i) => ({ ...t, __idx: i }));
   let current = original.slice();
 
@@ -105,7 +112,7 @@ async function renderStandings(){
   }
 
   function getComparable(t, key){
-    if(key === "rank") return t.__idx; // original ordering (asc = original, desc = reverse)
+    if(key === "rank") return t.__idx;
     if(key === "team") return String(t.team || "").toLowerCase();
     if(key === "record") return recordValue(t.record);
     if(key === "points_for") return toNum(t.points_for);
@@ -123,8 +130,8 @@ async function renderStandings(){
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${idx + 1}</td>
-        <td><b>${t.team}</b></td>
-        <td>${t.record || "—"}</td>
+        <td><b>${esc(t.team)}</b></td>
+        <td>${t.record ? esc(t.record) : "—"}</td>
         <td>${t.points_for != null ? Number(t.points_for).toFixed(1) : "—"}</td>
         <td>${t.points_against != null ? Number(t.points_against).toFixed(1) : "—"}</td>
         <td class="champ-cell">${champs == null ? "—" : champs}</td>
@@ -146,29 +153,38 @@ async function renderStandings(){
       const av = getComparable(a, key);
       const bv = getComparable(b, key);
 
+      // null/blank always bottom
       const aNull = (av === null || av === undefined || av === "");
       const bNull = (bv === null || bv === undefined || bv === "");
       if(aNull && bNull) return 0;
       if(aNull) return 1;
       if(bNull) return -1;
 
+      // string compare
       if(typeof av === "string" || typeof bv === "string"){
         return String(av).localeCompare(String(bv)) * factor;
       }
 
+      // numeric compare
       return (av - bv) * factor;
     });
+
+    // Special case: "rank" asc should be original order, desc should reverse
+    if(key === "rank"){
+      current = original.slice();
+      if(dir === "desc") current.reverse();
+    }
 
     renderRows(current);
   }
 
-  // wire dropdowns
+  // Hook dropdowns
   dropdowns.forEach(dd => {
     dd.addEventListener("change", () => {
       const key = dd.dataset.key;
       const dir = dd.value;
 
-      // reset others so only one sort is active
+      // One active sorter at a time
       dropdowns.forEach(other => {
         if(other !== dd) other.value = "none";
       });
@@ -177,9 +193,13 @@ async function renderStandings(){
     });
   });
 
+  // Initial render
   renderRows(current);
 }
 
+/* =========================
+   HISTORY
+========================= */
 async function renderHistory(){
   const h = await loadJSON("data/history.json");
   document.getElementById("hRange").textContent = h.seasons || "—";
@@ -189,11 +209,11 @@ async function renderHistory(){
   (h.champions || []).forEach(c=>{
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${c.year}</td>
-      <td><b>${c.champion}</b></td>
-      <td>${c.runner_up || "—"}</td>
-      <td>${c.score || "—"}</td>
-      <td>${c.note || ""}</td>
+      <td>${esc(c.year)}</td>
+      <td><b>${esc(c.champion)}</b></td>
+      <td>${c.runner_up ? esc(c.runner_up) : "—"}</td>
+      <td>${c.score ? esc(c.score) : "—"}</td>
+      <td>${c.note ? esc(c.note) : ""}</td>
     `;
     champBody.appendChild(tr);
   });
@@ -206,17 +226,20 @@ async function renderHistory(){
     card.innerHTML = `
       <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;">
         <div>
-          <div class="muted" style="font-size:12px;">${a.label}</div>
-          <div style="font-weight:900;font-size:16px;margin-top:4px;">${a.winner}</div>
-          <div class="muted" style="font-size:12px;margin-top:4px;">${a.detail || ""}</div>
+          <div class="muted" style="font-size:12px;">${esc(a.label)}</div>
+          <div style="font-weight:900;font-size:16px;margin-top:4px;">${esc(a.winner)}</div>
+          <div class="muted" style="font-size:12px;margin-top:4px;">${a.detail ? esc(a.detail) : ""}</div>
         </div>
-        <div class="chip">${a.year || ""}</div>
+        <div class="chip">${a.year ? esc(a.year) : ""}</div>
       </div>
     `;
     awards.appendChild(card);
   });
 }
 
+/* =========================
+   TEAMS
+========================= */
 async function renderTeams(){
   const t = await loadJSON("data/teams.json");
   const wrap = document.getElementById("teamsGrid");
@@ -226,18 +249,22 @@ async function renderTeams(){
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `
-      <h2 style="margin:0 0 6px;">${team.team_name}</h2>
-      <div class="muted" style="font-size:12px;">Manager: <b>${team.manager || "—"}</b></div>
-      <div class="muted" style="font-size:12px;margin-top:2px;">Division: <b>${team.division || "—"}</b></div>
-      <div style="margin-top:10px;white-space:pre-wrap;line-height:1.35;">${team.bio || "Bio coming soon."}</div>
+      <h2 style="margin:0 0 6px;">${esc(team.team_name)}</h2>
+      <div class="muted" style="font-size:12px;">Manager: <b>${team.manager ? esc(team.manager) : "—"}</b></div>
+      <div class="muted" style="font-size:12px;margin-top:2px;">Division: <b>${team.division ? esc(team.division) : "—"}</b></div>
+      <div style="margin-top:10px;white-space:pre-wrap;line-height:1.35;">${team.bio ? esc(team.bio) : "Bio coming soon."}</div>
     `;
     wrap.appendChild(card);
   });
 }
 
+/* =========================
+   BOOT
+========================= */
 window.addEventListener("DOMContentLoaded", async ()=>{
   setActiveNav();
   const page = document.body.getAttribute("data-page");
+
   try{
     if(page === "power") await renderPower();
     if(page === "standings") await renderStandings();
@@ -252,3 +279,4 @@ window.addEventListener("DOMContentLoaded", async ()=>{
     }
   }
 });
+
