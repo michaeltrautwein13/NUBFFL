@@ -408,3 +408,9 @@ code{
   border-radius: 10px;
   font-size: 12px;
 }
+
+@media (max-width: 700px) {
+  th.champ-header {
+    font-size: 12px;
+  }
+}
