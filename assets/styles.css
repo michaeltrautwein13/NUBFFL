@@ -595,3 +595,70 @@ code{
   font-size: 13px;
   line-height: 1.3;
 }
+/* =========================
+   HOMEPAGE LOGO SIZING FIXES
+========================= */
+
+/* League logo in hero */
+.hero-title-left{
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.hero-league-logo{
+  width: 72px;
+  height: auto;
+  max-height: 72px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* =========================
+   CHAMPION CARD IMAGE FIXES
+========================= */
+
+.champ-card--home{
+  margin-bottom: 16px;
+}
+
+.champ-logo-wrap{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 140px;
+}
+
+.champ-logo-img{
+  width: 120px;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 12px rgba(0,0,0,0.15));
+}
+
+/* Mobile adjustments */
+@media (max-width: 700px){
+  .hero-title-left{
+    gap: 10px;
+  }
+
+  .hero-league-logo{
+    width: 56px;
+    max-height: 56px;
+  }
+
+  .champ-logo-wrap{
+    min-width: unset;
+    margin-top: 12px;
+  }
+
+  .champ-logo-img{
+    width: 96px;
+  }
+
+  .champ-top{
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
