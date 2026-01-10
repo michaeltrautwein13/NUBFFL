@@ -257,6 +257,37 @@ async function renderTeams(){
     wrap.appendChild(card);
   });
 }
+async function renderHomepageChampion(){
+  const wrap = document.getElementById("championSpotlight");
+  if(!wrap) return;
+
+  const h = await loadJSON("data/history.json");
+  if(!h || !Array.isArray(h.champions) || h.champions.length === 0){
+    wrap.innerHTML = `<div class="error">No champions found in data/history.json</div>`;
+    return;
+  }
+
+  // pick most recent by year (works even if out of order)
+  const c = h.champions.slice().sort((a,b) => Number(a.year) - Number(b.year)).pop();
+
+  wrap.innerHTML = `
+    <section class="champ-card">
+      <div class="champ-top">
+        <div>
+          <div class="champ-title">Defending Champion</div>
+          <div class="champ-name">${c.champion || "—"}</div>
+          <div class="champ-sub">
+            ${c.year || "—"}
+            ${c.record ? ` • ${c.record}` : ""}
+            ${c.points ? ` • ${c.points} PF` : ""}
+          </div>
+          ${c.note ? `<div class="muted" style="margin-top:6px;font-size:13px;">${c.note}</div>` : ""}
+        </div>
+        <div class="trophy">🏆</div>
+      </div>
+    </section>
+  `;
+}
 
 /* =========================
    BOOT
